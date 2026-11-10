@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>50v50 Balancer | Ares Group</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#F30D17">
+<link rel="icon" type="image/png" href="https://ares-group.org/img/favicon.png?v=2">
+<style>
+  /* Ares Group look: black UI, brand red, Rajdhani headings + Barlow body (fonts served by ares-group.org). */
+  @font-face { font-family: 'Rajdhani'; font-weight: 600; font-display: swap; src: url(https://ares-group.org/fonts/rajdhani/files/rajdhani-latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Rajdhani'; font-weight: 700; font-display: swap; src: url(https://ares-group.org/fonts/rajdhani/files/rajdhani-latin-700-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Barlow'; font-weight: 400; font-display: swap; src: url(https://ares-group.org/fonts/barlow/files/barlow-latin-400-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Barlow'; font-weight: 600; font-display: swap; src: url(https://ares-group.org/fonts/barlow/files/barlow-latin-600-normal.woff2) format('woff2'); }
+  @font-face { font-family: 'Barlow'; font-weight: 700; font-display: swap; src: url(https://ares-group.org/fonts/barlow/files/barlow-latin-700-normal.woff2) format('woff2'); }
+  :root {
+    --bg: #000;
+    --panel: #0A0A0B;
+    --panel-2: #141416;
+    --line: #26272B;
+    --text: #DBDEE1;
+    --strong: #F2F3F5;
+    --muted: #949BA4;
+    --accent: #F30D17;
+    --accent-dark: #C40A12;
+    --red: #F04A4F;
+    --green: #23A55A;
+    --blue: #5B8DEF;
+    --ok: #23A55A;
+    --warn: #E3B341;
+    --bad: #FA777C;
+    --radius: 8px;
+    --head: "Rajdhani", "Barlow", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 15px/1.45 "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  a { color: var(--text); }
+  header {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 12px 24px; border-bottom: 1px solid var(--line);
+    background: #000;
+  }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .brand img { width: 36px; height: 30px; display: block; }
+  .brand h1 { margin: 0; font: 700 22px/1 var(--head); letter-spacing: .06em; text-transform: uppercase; color: var(--strong); }
+  .brand span { color: var(--muted); font: 600 15px/1 var(--head); letter-spacing: .1em; text-transform: uppercase; }
+  .navlink { color: var(--muted); font: 600 16px/1 var(--head); letter-spacing: .03em; text-decoration: none; padding: 6px 10px; border-radius: 4px; }
+  .navlink:hover { color: var(--strong); background: #111214; }
+  .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line);
+    font-size: 13px; color: var(--muted); white-space: nowrap;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.ok { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+  .dot.bad { background: var(--bad); }
+  .dot.warn { background: var(--warn); }
+
+  main {
+    max-width: 1180px; margin: 0 auto; padding: 24px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+  }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 20px;
+  }
+  .card h2 {
+    margin: 0 0 14px; font: 700 15px/1.2 var(--head); letter-spacing: .12em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .span-2 { grid-column: 1 / -1; }
+
+  /* Power */
+  .power { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+  .power-btn {
+    width: 132px; height: 132px; border-radius: 50%;
+    border: 3px solid var(--line); background: var(--panel-2); color: var(--muted);
+    font: 700 26px/1 var(--head); letter-spacing: .12em; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+    transition: border-color .2s, color .2s, box-shadow .2s, transform .05s;
+  }
+  .power-btn svg { width: 34px; height: 34px; }
+  .power-btn:active { transform: scale(.97); }
+  .power-btn.on { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 28px rgba(243,13,23,.3); }
+  .power-btn.on.dry { border-color: var(--blue); color: var(--blue); box-shadow: 0 0 28px rgba(91,141,239,.22); }
+  .power-btn:disabled { opacity: .6; cursor: wait; }
+  .mode-title { font: 700 32px/1.1 var(--head); text-transform: uppercase; letter-spacing: .03em; color: var(--strong); margin: 0 0 4px; }
+  .mode-sub { color: var(--muted); margin: 0 0 14px; }
+
+  .toggle { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+  .toggle input { display: none; }
+  .track { width: 40px; height: 22px; border-radius: 999px; background: var(--line); position: relative; transition: background .2s; }
+  .track::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+    border-radius: 50%; background: var(--text); transition: left .2s;
+  }
+  .toggle input:checked + .track { background: var(--blue); }
+  .toggle input:checked + .track::after { left: 21px; }
+
+  /* Teams */
+  .teams { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px; }
+  .team { text-align: center; }
+  .team .n { font: 700 54px/1 var(--head); font-variant-numeric: tabular-nums; }
+  .team .l { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-top: 6px; }
+  .team.red .n { color: var(--red); }
+  .team.green .n { color: var(--green); }
+  .vs { color: var(--muted); font: 700 20px/1 var(--head); }
+  .bar { display: flex; height: 8px; border-radius: 999px; overflow: hidden; background: var(--line); margin: 18px 0 10px; }
+  .bar div { transition: width .4s; }
+  .bar .r { background: var(--red); }
+  .bar .g { background: var(--green); }
+  .team-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; }
+  .balanced { color: var(--ok); }
+  .unbalanced { color: var(--warn); }
+
+  /* Forms */
+  label.f { display: block; font-size: 13px; color: var(--muted); margin: 0 0 6px; }
+  input[type=text], input[type=password], input[type=number], textarea {
+    width: 100%; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px;
+    font: inherit; outline: none;
+  }
+  input:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 72px; }
+  .row { display: grid; grid-template-columns: 2fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .field { margin-bottom: 12px; position: relative; }
+  .pw-wrap { position: relative; }
+  .pw-wrap button { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }
+  .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
+  button.b {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--line);
+    border-radius: 4px; padding: 9px 16px; font: 700 15px var(--font, "Barlow"), sans-serif; letter-spacing: .03em; cursor: pointer;
+  }
+  button.b:hover { border-color: var(--muted); color: var(--strong); }
+  button.b.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.b.primary:hover { background: var(--accent-dark); border-color: var(--accent-dark); }
+  button.b.small { padding: 4px 10px; font-size: 12px; }
+  button.link { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 4px 6px; }
+  button.link:hover { color: var(--text); }
+  .result { font-size: 13px; color: var(--muted); }
+  .result.ok { color: var(--ok); }
+  .result.bad { color: var(--bad); }
+
+  /* Messages */
+  .msg { border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
+  .msg:first-of-type { border-top: none; padding-top: 0; margin-top: 0; }
+  .msg-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+  .msg-head strong { font-size: 14px; }
+  .msg-head small { color: var(--muted); }
+  .preview { margin-top: 6px; font-size: 13px; color: var(--muted); font-family: var(--mono); }
+  .preview b { color: var(--text); font-weight: 400; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip { font-family: var(--mono); font-size: 12px; padding: 2px 8px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); color: var(--warn); }
+  .grace { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .grace input { width: 90px; }
+
+  /* Players + log */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th { text-align: left; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding: 0 8px 8px; }
+  td { padding: 7px 8px; border-top: 1px solid var(--line); }
+  .tag { font-size: 11px; padding: 2px 8px; border-radius: 6px; font-weight: 700; letter-spacing: .06em; }
+  .tag.Valkyra { background: rgba(240,74,79,.15); color: var(--red); }
+  .tag.Manticore { background: rgba(35,165,90,.15); color: var(--green); }
+  .tag.Lonestar { background: rgba(91,141,239,.15); color: var(--blue); }
+  .tag.other { background: var(--panel-2); color: var(--muted); }
+  .countdown { color: var(--warn); font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); padding: 18px 8px; text-align: center; }
+  .scroll { max-height: 340px; overflow: auto; }
+  .log { font-family: var(--mono); font-size: 12.5px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+  .log .e { color: var(--bad); }
+  .log .w { color: var(--warn); }
+  .log .m { color: var(--warn); }
+
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--panel-2); border: 1px solid var(--line); padding: 10px 18px; border-radius: 8px;
+    transition: transform .25s; z-index: 10;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.bad { border-color: var(--bad); color: var(--bad); }
+
+  .header-right { display: flex; align-items: center; gap: 10px; }
+
+  @media (max-width: 860px) {
+    main { grid-template-columns: 1fr; padding: 16px; }
+    header { padding: 14px 16px; }
+    .brand span { display: none; }
+    .power { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <a class="brand" href="https://ares-group.org/" title="ares-group.org">
+    <img src="https://ares-group.org/img/ag-logo.png" alt="" width="36" height="30">
+    <h1>Ares Group</h1><span>50v50 Balancer</span>
+  </a>
+  <div class="header-right">
+    <div class="pill" id="conn"><span class="dot"></span><span>Connecting…</span></div>
+    <a class="navlink" href="https://ares-group.org/admin">Admin</a>
+    <a class="navlink" href="https://warcon.ares-group.org/">WarCon</a>
+  </div>
+</header>
+
+    <span class="result bad" id="login-result"></span>
+  </form>
+</div>
+
+<main>
+  <section class="card">
+    <h2>50v50 Auto Balance</h2>
+    <div class="power">
+      <button class="power-btn" id="power" aria-label="Toggle 50v50 mode">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.2 6.6a8 8 0 1 0 11.6 0"/></svg>
+        <span id="power-label">OFF</span>
+      </button>
+      <div>
+        <p class="mode-title" id="mode-title">Off</p>
+        <p class="mode-sub" id="mode-sub">Players can pick any team. Nobody is moved.</p>
+        <label class="toggle">
+          <input type="checkbox" id="dry">
+          <span class="track"></span>
+          <span>Dry run <small style="color:var(--muted)">(log what it would do, don't move anyone)</small></span>
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Teams</h2>
+    <div class="teams">
+      <div class="team red"><div class="n" id="c-red">–</div><div class="l">Valkyra · Red</div></div>
+      <div class="vs">VS</div>
+      <div class="team green"><div class="n" id="c-green">–</div><div class="l">Manticore · Green</div></div>
+    </div>
+    <div class="bar"><div class="r" id="bar-r" style="width:50%"></div><div class="g" id="bar-g" style="width:50%"></div></div>
+    <div class="team-meta">
+      <span id="balance-text">–</span>
+      <span><span id="c-blue">0</span> Lonestar · <span id="c-other">0</span> waiting</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Game Server Connection</h2>
+    <form id="rcon-form" autocomplete="off">
+      <div class="row">
+        <div><label class="f" for="host">Server IP</label><input type="text" id="host" placeholder="127.0.0.1" spellcheck="false"></div>
+        <div><label class="f" for="port">RCON Port</label><input type="text" id="port" inputmode="numeric" placeholder="7776"></div>
+      </div>
+      <div class="field">
+        <label class="f" for="password">RCON Password</label>
+        <div class="pw-wrap">
+          <input type="password" id="password" placeholder="" autocomplete="new-password">
+          <button type="button" class="link" id="pw-toggle">Show</button>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit" class="b primary">Save</button>
+        <button type="button" class="b" id="test">Test connection</button>
+        <span class="result" id="test-result"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Balance Rules</h2>
+    <div class="grace">
+      <label class="f" for="grace" style="margin:0">Grace period before moving</label>
+      <input type="number" id="grace" min="5" max="600" step="1"> <span style="color:var(--muted)">seconds</span>
+    </div>
+    <p style="color:var(--muted);margin:0 0 14px;font-size:14px">
+      Teams count as balanced when Red and Green differ by one or less. When they aren't, the most recently joined players on the bigger team are warned, then moved after the grace period. Anyone on Lonestar is sent straight to the smaller team.
+    </p>
+    <div class="actions">
+      <button class="b" id="save-grace">Save</button>
+    </div>
+  </section>
+
+  <section class="card span-2">
+    <h2>In-Game Messages</h2>
+    <div class="chips">
+      <span style="color:var(--muted);font-size:13px">Placeholders:</span>
+      <span class="chip">{name}</span><span class="chip">{target}</span><span class="chip">{seconds}</span>
+    </div>
+    <div id="messages"></div>
+    <div class="actions" style="margin-top:16px">
+      <button class="b primary" id="save-messages">Save messages</button>
+      <span class="result" id="msg-result"></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Players</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Name</th><th>Team</th><th>Status</th></tr></thead>
+        <tbody id="players"><tr><td colspan="3" class="empty">No data yet</td></tr></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Activity</h2>
+    <div class="scroll log" id="log"><span style="color:var(--muted)">Waiting for activity…</span></div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MESSAGE_INFO = {
+  warn:     { title: "Balance warning",   when: "Sent to the newest player on the bigger team" },
+  moved:    { title: "Moved notice",       when: "Sent after Auto Balance moves someone" },
+  assigned: { title: "Lonestar reassign",  when: "Sent when a new Lonestar pick is put on a combat team" },
+};
+const SAMPLE = { name: "Rook", target: "GREEN (Manticore)", seconds: "30" };
+
+let config = null;
+let busy = false;
+
+const $ = (id) => document.getElementById(id);
+
+function toast(text, bad) {
+  const t = $("toast");
+  t.textContent = text;
+  t.className = "toast show" + (bad ? " bad" : "");
+  clearTimeout(t._h);
+  t._h = setTimeout(() => (t.className = "toast"), 2600);
+}
+
+async function api(path, body) {
+  const opts = body === undefined ? {} : {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  };
+  const res = await fetch(path, opts);
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) throw new Error("Signed out. Sign in again at ares-group.org.");
+  if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+  return data;
+}
+
+let started = false;
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function render(template) {
+  let out = escapeHtml(template);
+  for (const [k, v] of Object.entries(SAMPLE)) {
+    out = out.split("{" + k + "}").join("<b>" + escapeHtml(k === "seconds" ? ($("grace").value || v) : v) + "</b>");
+  }
+  return out;
+}
+
+function renderPower() {
+  const on = config.enabled, dry = config.dry_run;
+  $("power").className = "power-btn" + (on ? " on" : "") + (on && dry ? " dry" : "");
+  $("power-label").textContent = on ? "ON" : "OFF";
+  $("dry").checked = dry;
+  if (!on) {
+    $("mode-title").textContent = "Off";
+    $("mode-sub").textContent = "Players can pick any team. Nobody is moved.";
+  } else if (dry) {
+    $("mode-title").textContent = "Dry run";
+    $("mode-sub").textContent = "Watching teams and logging what it would do. Nobody is moved or messaged.";
+  } else {
+    $("mode-title").textContent = "50v50 active";
+    $("mode-sub").textContent = "Keeping Valkyra and Manticore within one player.";
+  }
+}
+
+function fillForm() {
+  $("host").value = config.rcon.host;
+  $("port").value = config.rcon.port;
+  $("password").value = "";
+  $("password").placeholder = config.rcon.password_set ? "•••••••• (saved, leave blank to keep)" : "Enter RCON password";
+  $("grace").value = config.grace_seconds;
+
+  const wrap = $("messages");
+  wrap.innerHTML = "";
+  for (const key of Object.keys(MESSAGE_INFO)) {
+    const info = MESSAGE_INFO[key];
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.innerHTML = `
+      <div class="msg-head">
+        <div><strong>${info.title}</strong> <small>${info.when}</small></div>
+        <button type="button" class="link" data-reset="${key}">Reset to default</button>
+      </div>
+      <textarea id="m-${key}" maxlength="500" rows="2"></textarea>
+      <div class="preview" id="p-${key}"></div>`;
+    wrap.appendChild(div);
+    const ta = div.querySelector("textarea");
+    ta.value = config.messages[key];
+    const update = () => ($("p-" + key).innerHTML = "Preview: " + render(ta.value));
+    ta.addEventListener("input", update);
+    update();
+  }
+  wrap.querySelectorAll("[data-reset]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.reset;
+      $("m-" + key).value = config.default_messages[key];
+      $("m-" + key).dispatchEvent(new Event("input"));
+    });
+  });
+  renderPower();
+}
+
+async function saveConfig(patch, okText) {
+  config = await api("/api/config", patch);
+  renderPower();
+  if (okText) toast(okText);
+  refresh();
+  return config;
+}
+
+$("power").addEventListener("click", async () => {
+  if (busy || !config) return;
+  busy = true; $("power").disabled = true;
+  try {
+    await saveConfig({ enabled: !config.enabled }, !config.enabled ? "50v50 mode ON" : "50v50 mode OFF");
+  } catch (e) { toast(e.message, true); }
+  busy = false; $("power").disabled = false;
+});
+
+$("dry").addEventListener("change", async (ev) => {
+  try { await saveConfig({ dry_run: ev.target.checked }, ev.target.checked ? "Dry run on" : "Dry run off"); }
+  catch (e) { ev.target.checked = !ev.target.checked; toast(e.message, true); }
+});
+
+$("pw-toggle").addEventListener("click", () => {
+  const pw = $("password");
+  pw.type = pw.type === "password" ? "text" : "password";
+  $("pw-toggle").textContent = pw.type === "password" ? "Show" : "Hide";
+});
+
+$("rcon-form").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  try {
+    await saveConfig({ rcon: { host: $("host").value, port: $("port").value, password: $("password").value } }, "Connection saved");
+    $("password").value = "";
+    $("password").placeholder = config.rcon.password_set ? "•••••••• (saved, leave blank to keep)" : "Enter RCON password";
+  } catch (e) { toast(e.message, true); }
+});
+
+$("test").addEventListener("click", async () => {
+  const out = $("test-result");
+  out.className = "result"; out.textContent = "Testing…";
+  try {
+    const r = await api("/api/test", { host: $("host").value, port: $("port").value, password: $("password").value });
+    if (r.ok) {
+      out.className = "result ok";
+      out.textContent = `Connected in ${r.ms} ms · ${r.players} players online`;
+    } else {
+      out.className = "result bad";
+      out.textContent = "Failed: " + r.error;
+    }
+  } catch (e) { out.className = "result bad"; out.textContent = e.message; }
+});
+
+$("save-grace").addEventListener("click", async () => {
+  try { await saveConfig({ grace_seconds: Number($("grace").value) }, "Grace period saved"); $("grace").value = config.grace_seconds; }
+  catch (e) { toast(e.message, true); }
+});
+$("grace").addEventListener("input", () => document.querySelectorAll("#messages textarea").forEach((t) => t.dispatchEvent(new Event("input"))));
+
+$("save-messages").addEventListener("click", async () => {
+  const messages = {};
+  for (const key of Object.keys(MESSAGE_INFO)) messages[key] = $("m-" + key).value;
+  try {
+    await saveConfig({ messages }, "Messages saved");
+    $("msg-result").className = "result ok";
+    $("msg-result").textContent = "Saved. New messages apply on the next warning.";
+  } catch (e) { toast(e.message, true); }
+});
+
+function renderStatus(s) {
+  const pill = $("conn");
+  let cls = "bad", text = "Not configured";
+  if (s.configured && s.connected) { cls = "ok"; text = "Server connected"; }
+  else if (s.configured) { cls = "bad"; text = "Server unreachable"; }
+  else { cls = "warn"; }
+  pill.innerHTML = `<span class="dot ${cls}"></span><span>${text}</span>`;
+  pill.title = s.last_error || "";
+
+  if (config && (s.enabled !== config.enabled || s.dry_run !== config.dry_run)) {
+    config.enabled = s.enabled; config.dry_run = s.dry_run; renderPower();
+  }
+
+  const { red, green, blue, other } = s.counts;
+  $("c-red").textContent = red; $("c-green").textContent = green;
+  $("c-blue").textContent = blue; $("c-other").textContent = other;
+  const total = red + green;
+  $("bar-r").style.width = total ? (red / total * 100) + "%" : "50%";
+  $("bar-g").style.width = total ? (green / total * 100) + "%" : "50%";
+  const diff = Math.abs(red - green);
+  const bt = $("balance-text");
+  bt.className = !s.connected ? "" : diff <= 1 ? "balanced" : "unbalanced";
+  bt.textContent = !s.connected ? "No live data" : diff <= 1 ? "Balanced" : `Off by ${diff}`;
+
+  const tbody = $("players");
+  if (!s.players.length) {
+    tbody.innerHTML = `<tr><td colspan="3" class="empty">${s.connected ? "Nobody online" : "No live data"}</td></tr>`;
+  } else {
+    tbody.innerHTML = s.players.map((p) => {
+      const known = ["Valkyra", "Manticore", "Lonestar"].includes(p.faction);
+      let status = '<span style="color:var(--muted)">–</span>';
+      if (p.pending_seconds !== null) status = `<span class="countdown">Moving to ${escapeHtml(p.pending_target)} in ${p.pending_seconds}s</span>`;
+      return `<tr><td>${escapeHtml(p.name)}</td><td><span class="tag ${known ? p.faction : "other"}">${escapeHtml(p.faction)}</span></td><td>${status}</td></tr>`;
+    }).join("");
+  }
+
+  const log = $("log");
+  const atBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 30;
+  if (s.logs.length) {
+    log.innerHTML = s.logs.map((l) => {
+      const cls = l.error ? "e" : /\[(WARN|WOULD|MOVE|ASSIGN)/.test(l.line) ? "w" : /\[(PANEL|MODE)/.test(l.line) ? "m" : "";
+      return `<div class="${cls}">${escapeHtml(l.line)}</div>`;
+    }).join("");
+    if (atBottom) log.scrollTop = log.scrollHeight;
+  }
+}
+
+async function refresh() {
+  try { renderStatus(await api("/api/status")); }
+  catch (e) { $("conn").innerHTML = `<span class="dot bad"></span><span>Panel offline</span>`; }
+}
+
+async function start() {
+  try { config = await api("/api/config"); fillForm(); }
+  catch (e) { toast("Could not load settings: " + e.message, true); return; }
+  refresh();
+  if (!started) { started = true; setInterval(refresh, 2000); }
+}
+
+start();
+</script>
+</body>
+</html>

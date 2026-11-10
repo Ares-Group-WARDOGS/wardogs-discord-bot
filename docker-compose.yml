@@ -1,0 +1,22 @@
+services:
+  ares-bot:
+    build: .
+    container_name: ares-bot
+    restart: unless-stopped
+    # Host networking so the bot can reach a WarCon instance on localhost. The bot opens no ports.
+    network_mode: host
+    env_file:
+      - .env
+    environment:
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./data:/app/data
+
+  # 50v50 auto balancer + its web panel (127.0.0.1:8765). RCON settings live in ./balancer-data/config.json.
+  ares-balancer:
+    build: ./balancer
+    container_name: ares-balancer
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./balancer-data:/data

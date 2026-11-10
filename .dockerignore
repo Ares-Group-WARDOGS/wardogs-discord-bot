@@ -1,0 +1,9 @@
+.git
+.gitignore
+.idea
+.env
+data
+__pycache__
+*.pyc
+*.backup
+*.before-*
